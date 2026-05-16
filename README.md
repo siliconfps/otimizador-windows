@@ -1,7 +1,89 @@
-## atenção
+# Otimizador Windows
 
-remove as correções de vulnerabilidades de cpu, use por sua conta e risco
+Script PowerShell para otimizacao pos-instalacao do Windows 10/11 com foco em desempenho e privacidade.
 
-# instruções
+Compativel com **Windows 10** e **Windows 11** (21H2+).
 
-powershell como admin:  Set-ExecutionPolicy Unrestricted e executar o script .\otimizador.ps1
+---
+
+## O que o script faz
+
+| # | Otimizacao | Descricao |
+|---|-----------|------------|
+| 1 | Mitigacoes de CPU | Desativa mitigacoes Spectre/Meltdown (ganho de desempenho) |
+| 2 | Compressao de Memoria | Desativa compressao para reduzir latencia |
+| 3 | Telemetria | Bloqueia coleta de dados e DiagTrack |
+| 4 | Busca do Bing | Remove Bing da pesquisa do menu Iniciar |
+| 5 | Game Overlay | Desativa avisos e captura de tela (Win+G) |
+| 6 | Cortana | Desativa assistente virtual |
+| 7 | Servicos Xbox | Desativa XblAuth, GameSave, NetApi e GipSvc |
+| 8 | Dicas/Sugestoes | Remove anuncios e recomendacoes |
+| 9 | Hibernacao | Remove hiberfil.sys e libera GBs de disco |
+| 10 | P2P de Updates | Desativa Otimizacao de Entrega |
+| 11 | Rede | Ajustes TCP (autotuning, RSS, chimney) |
+| 12 | Apps em segundo plano | Impede execucao desnecessaria em background |
+| 13 | Plano de energia | Ativa Alto Desempenho |
+| 14 | Widgets | Desativa Widgets (Windows 11) |
+| 15 | Arquivos temporarios | Remove lixo do TEMP e Windows/Temp |
+
+---
+
+## Avisos importantes
+
+- **Remove as correcoes de vulnerabilidades de CPU (Spectre/Meltdown)** -- use por sua conta e risco. Nao recomendado para servidores ou maquinas corporativas.
+- A **hibernacao sera desativada** -- voce nao podera usar o modo hibernar, mas o arquivo `hiberfil.sys` (que ocupa GBs) sera removido.
+- Algumas alteracoes exigem **reinicializacao** para ter efeito completo.
+- Recomenda-se **criar um ponto de restauracao** antes de executar.
+
+---
+
+## Como usar
+
+1. Abra o **PowerShell como Administrador** (clique direito > Executar como administrador)
+
+2. Libere a execucao de scripts:
+```powershell
+Set-ExecutionPolicy Unrestricted -Scope Process -Force
+```
+
+3. Navegue ate a pasta do script e execute:
+```powershell
+.\otimizador.ps1
+```
+
+4. Ao final, o script perguntara se deseja **reiniciar o PC**. Responda `S` para sim ou `N` para reiniciar depois.
+
+### Execucao rapida (uma linha)
+
+```powershell
+Set-ExecutionPolicy Unrestricted -Scope Process -Force; .\otimizador.ps1
+```
+
+---
+
+## Reverter alteracoes
+
+Para reverter as principais mudancas manualmente:
+
+| Otimizacao | Como reverter |
+|------------|---------------|
+| Mitigacoes CPU | `FeatureSettingsOverride` = 0 (HKLM) |
+| Telemetria | `AllowTelemetry` = 1, reativar DiagTrack |
+| Hibernacao | `powercfg -h on` |
+| Plano de energia | Painel de Controle > Opcoes de Energia > Equilibrado |
+| Cortana | `AllowCortana` = 1 (HKLM) |
+| Servicos Xbox | `Set-Service -StartupType Manual` |
+
+---
+
+## Requisitos
+
+- Windows 10 ou Windows 11 (64-bit)
+- PowerShell 5.1+
+- Executar como **Administrador**
+
+---
+
+## Licenca
+
+MIT -- veja o arquivo [LICENSE](LICENSE).

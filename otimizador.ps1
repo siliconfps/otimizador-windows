@@ -91,6 +91,121 @@ try {
     Write-Warning "    Erro no GameDVR (HKLM): $($_.Exception.Message)"
 }
 
+# 6. DESATIVAR CORTANA
+Write-Host "[>] Desativando Cortana..." -ForegroundColor Yellow
+$cortanaPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+if (!(Test-Path $cortanaPath)) { New-Item -Path $cortanaPath -Force | Out-Null }
+try {
+    Set-ItemProperty -Path $cortanaPath -Name "AllowCortana" -Value 0 -Type DWord -ErrorAction Stop
+    Write-Host "    Cortana desativada." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro ao desativar Cortana: $($_.Exception.Message)"
+}
+
+# 7. DESATIVAR SERVICOS XBOX
+Write-Host "[>] Desativando servicos Xbox..." -ForegroundColor Yellow
+$servicosXbox = @("XblAuthManager","XblGameSave","XboxNetApiSvc","XboxGipSvc")
+foreach ($svc in $servicosXbox) {
+    Stop-Service -Name $svc -Force -ErrorAction SilentlyContinue
+    Set-Service -Name $svc -StartupType Disabled -ErrorAction SilentlyContinue
+}
+Write-Host "    Servicos Xbox desativados." -ForegroundColor Green
+
+# 8. DESATIVAR DICAS E SUGESTOES DO WINDOWS
+Write-Host "[>] Desativando dicas e sugestoes..." -ForegroundColor Yellow
+$tipsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
+if (!(Test-Path $tipsPath)) { New-Item -Path $tipsPath -Force | Out-Null }
+try {
+    Set-ItemProperty -Path $tipsPath -Name "SoftLandingEnabled" -Value 0 -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $tipsPath -Name "SubscribedContent-338393Enabled" -Value 0 -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $tipsPath -Name "SubscribedContent-353694Enabled" -Value 0 -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $tipsPath -Name "SubscribedContent-353696Enabled" -Value 0 -Type DWord -ErrorAction Stop
+    Write-Host "    Dicas e sugestoes desativadas." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro ao desativar dicas: $($_.Exception.Message)"
+}
+
+# 9. DESATIVAR HIBERNACAO (Libera GBs de espaco)
+Write-Host "[>] Desativando hibernacao..." -ForegroundColor Yellow
+try {
+    powercfg -h off
+    Write-Host "    Hibernacao desativada (arquivo hiberfil.sys removido)." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro ao desativar hibernacao: $($_.Exception.Message)"
+}
+
+# 10. DESATIVAR OTIMIZACAO DE ENTREGA (P2P de updates)
+Write-Host "[>] Desativando Otimizacao de Entrega (P2P)..." -ForegroundColor Yellow
+$deliveryOptPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization"
+if (!(Test-Path $deliveryOptPath)) { New-Item -Path $deliveryOptPath -Force | Out-Null }
+try {
+    Set-ItemProperty -Path $deliveryOptPath -Name "DODownloadMode" -Value 0 -Type DWord -ErrorAction Stop
+    Write-Host "    Otimizacao de entrega (P2P) desativada." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro no Delivery Optimization: $($_.Exception.Message)"
+}
+
+# 11. AJUSTES DE REDE (TCP Autotuning)
+Write-Host "[>] Aplicando ajustes de rede..." -ForegroundColor Yellow
+try {
+    netsh int tcp set global autotuninglevel=normal
+    netsh int tcp set global rss=enabled
+    netsh int tcp set global chimney=enabled
+    Write-Host "    Ajustes de rede aplicados." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro nos ajustes de rede: $($_.Exception.Message)"
+}
+
+# 12. DESATIVAR APPS EM SEGUNDO PLANO
+Write-Host "[>] Desativando apps em segundo plano..." -ForegroundColor Yellow
+$bgAppsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications"
+if (!(Test-Path $bgAppsPath)) { New-Item -Path $bgAppsPath -Force | Out-Null }
+try {
+    Set-ItemProperty -Path $bgAppsPath -Name "GlobalUserDisabled" -Value 1 -Type DWord -ErrorAction Stop
+    Write-Host "    Apps em segundo plano limitados." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro nos apps em segundo plano: $($_.Exception.Message)"
+}
+
+# 13. PLANO DE ENERGIA - ALTO DESEMPENHO
+Write-Host "[>] Ativando plano de Alto Desempenho..." -ForegroundColor Yellow
+try {
+    powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+    Write-Host "    Plano Alto Desempenho ativado." -ForegroundColor Green
+} catch {
+    try {
+        $highPerf = powercfg -list | Select-String -Pattern "Alto desempenho|High performance"
+        if ($highPerf) {
+            $guid = ($highPerf -split '\s+')[3]
+            powercfg -setactive $guid
+            Write-Host "    Plano Alto Desempenho ativado." -ForegroundColor Green
+        }
+    } catch {
+        Write-Warning "    Erro ao ativar plano de energia: $($_.Exception.Message)"
+    }
+}
+
+# 14. DESATIVAR WIDGETS (Windows 11)
+Write-Host "[>] Desativando Widgets..." -ForegroundColor Yellow
+$widgetsPath = "HKLM:\SOFTWARE\Policies\Microsoft\Dsh"
+if (!(Test-Path $widgetsPath)) { New-Item -Path $widgetsPath -Force | Out-Null }
+try {
+    Set-ItemProperty -Path $widgetsPath -Name "AllowNewsAndInterests" -Value 0 -Type DWord -ErrorAction Stop
+    Write-Host "    Widgets desativados." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro ao desativar Widgets: $($_.Exception.Message)"
+}
+
+# 15. LIMPEZA DE ARQUIVOS TEMPORARIOS
+Write-Host "[>] Limpando arquivos temporarios..." -ForegroundColor Yellow
+try {
+    Get-ChildItem -Path $env:TEMP -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+    Get-ChildItem -Path "C:\Windows\Temp" -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "    Arquivos temporarios removidos." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro na limpeza de temporarios: $($_.Exception.Message)"
+}
+
 # REINICIAR EXPLORER PARA APLICAR MUDANCAS VISUAIS
 Write-Host "[!] Reiniciando Windows Explorer..." -ForegroundColor Magenta
 Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
