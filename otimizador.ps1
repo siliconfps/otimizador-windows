@@ -127,11 +127,11 @@ try {
 
 # 9. DESATIVAR HIBERNACAO (Libera GBs de espaco)
 Write-Host "[>] Desativando hibernacao..." -ForegroundColor Yellow
-try {
-    powercfg -h off
+$hibernar = Start-Process -FilePath "powercfg" -ArgumentList "-h off" -Wait -NoNewWindow -PassThru
+if ($hibernar.ExitCode -eq 0) {
     Write-Host "    Hibernacao desativada (arquivo hiberfil.sys removido)." -ForegroundColor Green
-} catch {
-    Write-Warning "    Erro ao desativar hibernacao: $($_.Exception.Message)"
+} else {
+    Write-Warning "    Erro ao desativar hibernacao (codigo $($hibernar.ExitCode))."
 }
 
 # 10. DESATIVAR OTIMIZACAO DE ENTREGA (P2P de updates)
@@ -147,13 +147,21 @@ try {
 
 # 11. AJUSTES DE REDE (TCP Autotuning)
 Write-Host "[>] Aplicando ajustes de rede..." -ForegroundColor Yellow
-try {
-    netsh int tcp set global autotuninglevel=normal
-    netsh int tcp set global rss=enabled
-    netsh int tcp set global chimney=enabled
+$netOk = $true
+$netshCommands = @(
+    @("int tcp set global autotuninglevel=normal", "TCP Autotuning"),
+    @("int tcp set global rss=enabled", "RSS (Receive Side Scaling)")
+)
+foreach ($cmd in $netshCommands) {
+    $result = netsh $($cmd[0]) 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "    Falha ao configurar $($cmd[1]): $result"
+        $netOk = $false
+    }
+}
+# Chimney removido: obsoleto/deprecated desde o Windows 10 1709
+if ($netOk) {
     Write-Host "    Ajustes de rede aplicados." -ForegroundColor Green
-} catch {
-    Write-Warning "    Erro nos ajustes de rede: $($_.Exception.Message)"
 }
 
 # 12. DESATIVAR APPS EM SEGUNDO PLANO
@@ -169,20 +177,28 @@ try {
 
 # 13. PLANO DE ENERGIA - ALTO DESEMPENHO
 Write-Host "[>] Ativando plano de Alto Desempenho..." -ForegroundColor Yellow
-try {
-    powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
-    Write-Host "    Plano Alto Desempenho ativado." -ForegroundColor Green
-} catch {
-    try {
-        $highPerf = powercfg -list | Select-String -Pattern "Alto desempenho|High performance"
-        if ($highPerf) {
-            $guid = ($highPerf -split '\s+')[3]
-            powercfg -setactive $guid
-            Write-Host "    Plano Alto Desempenho ativado." -ForegroundColor Green
-        }
-    } catch {
-        Write-Warning "    Erro ao ativar plano de energia: $($_.Exception.Message)"
+$guidAltoDesempenho = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+$planoAtivado = $false
+
+# Tenta GUID padrao primeiro
+$result = powercfg -setactive $guidAltoDesempenho 2>&1
+if ($LASTEXITCODE -eq 0) {
+    $planoAtivado = $true
+} else {
+    # Busca dinamicamente por "Alto desempenho" ou "High performance"
+    $planos = powercfg -list 2>&1
+    $linha = $planos | Where-Object { $_ -match "Alto desempenho|High performance|Ultimate Performance" } | Select-Object -First 1
+    if ($linha -and $linha -match '([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})') {
+        $guid = $Matches[1]
+        powercfg -setactive $guid 2>&1 | Out-Null
+        $planoAtivado = ($LASTEXITCODE -eq 0)
     }
+}
+
+if ($planoAtivado) {
+    Write-Host "    Plano Alto Desempenho ativado." -ForegroundColor Green
+} else {
+    Write-Warning "    Nao foi possivel ativar o plano Alto Desempenho."
 }
 
 # 14. DESATIVAR WIDGETS (Windows 11)
@@ -198,17 +214,34 @@ try {
 
 # 15. LIMPEZA DE ARQUIVOS TEMPORARIOS
 Write-Host "[>] Limpando arquivos temporarios..." -ForegroundColor Yellow
-try {
-    Get-ChildItem -Path $env:TEMP -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-    Get-ChildItem -Path "C:\Windows\Temp" -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+$tempErros = 0
+@($env:TEMP, "C:\Windows\Temp") | ForEach-Object {
+    Get-ChildItem -Path $_ -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+        try {
+            Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction Stop
+        } catch {
+            # Arquivos em uso serao ignorados silenciosamente
+            $tempErros++
+        }
+    }
+}
+if ($tempErros -gt 0) {
+    Write-Host "    Limpeza concluida ($tempErros itens em uso foram ignorados)." -ForegroundColor Yellow
+} else {
     Write-Host "    Arquivos temporarios removidos." -ForegroundColor Green
-} catch {
-    Write-Warning "    Erro na limpeza de temporarios: $($_.Exception.Message)"
 }
 
 # REINICIAR EXPLORER PARA APLICAR MUDANCAS VISUAIS
-Write-Host "[!] Reiniciando Windows Explorer..." -ForegroundColor Magenta
-Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+Write-Host "---"
+Write-Host "[!] O Windows Explorer sera reiniciado para aplicar algumas mudancas." -ForegroundColor Magenta
+Write-Host "    Suas janelas abertas piscarao brevemente."
+$respExplorer = Read-Host "    Deseja reiniciar o Explorer agora? (S/N)"
+if ($respExplorer -eq "S" -or $respExplorer -eq "s") {
+    Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+    Write-Host "    Explorer reiniciado." -ForegroundColor Green
+} else {
+    Write-Host "    Pulando reinicio do Explorer." -ForegroundColor Yellow
+}
 
 Write-Host "---"
 Write-Host "Sucesso! Algumas alteracoes precisam de REINICIALIZACAO para funcionar." -ForegroundColor Green
