@@ -1,105 +1,108 @@
-# Otimizador Windows
+<p align="center">
+  <img src="https://img.shields.io/badge/versão-3.0-blue?style=for-the-badge" alt="Versão 3.0">
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows 10 | 11">
+  <img src="https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell 5.1+">
+  <img src="https://img.shields.io/badge/licença-MIT-green?style=for-the-badge" alt="MIT License">
+</p>
 
-Script PowerShell para otimizacao pos-instalacao do Windows 10/11 com foco em desempenho e privacidade.
+<h1 align="center">⚡ Otimizador Windows</h1>
 
-Compativel com **Windows 10** e **Windows 11** (21H2+).
-
----
-
-## O que o script faz
-
-| # | Otimizacao | Descricao |
-|---|-----------|------------|
-| 1 | Mitigacoes de CPU | Desativa mitigacoes Spectre/Meltdown (ganho de desempenho) |
-| 2 | Compressao de Memoria | Desativa compressao para reduzir latencia |
-| 3 | Telemetria | Bloqueia coleta de dados e DiagTrack |
-| 4 | Busca do Bing | Remove Bing da pesquisa do menu Iniciar |
-| 5 | Game Overlay | Desativa avisos e captura de tela (Win+G) |
-| 6 | Cortana | Desativa assistente virtual |
-| 7 | Servicos Xbox | Desativa XblAuth, GameSave, NetApi e GipSvc |
-| 8 | Dicas/Sugestoes | Remove anuncios e recomendacoes |
-| 9 | Hibernacao | Remove hiberfil.sys e libera GBs de disco |
-| 10 | P2P de Updates | Desativa Otimizacao de Entrega |
-| 11 | Rede | Ajustes TCP (autotuning, RSS, chimney) |
-| 12 | Apps em segundo plano | Impede execucao desnecessaria em background |
-| 13 | Plano de energia | Ativa Alto Desempenho |
-| 14 | Widgets | Desativa Widgets (Windows 11) |
-| 15 | Arquivos temporarios | Remove lixo do TEMP e Windows/Temp |
-| 16 | Menu de contexto Win11 | Restaura o menu de contexto classico (desativa o moderno) |
-| 17 | Acesso Rapido | Remove Acesso Rapido do Explorer e abre em "Este Computador" |
+<p align="center">
+  Script de otimização pós-instalação do Windows 10/11 com foco em <b>desempenho</b> e <b>privacidade</b>.<br>
+  Disponível como <b>.EXE</b> (clique e pronto) ou <b>.PS1</b> (PowerShell tradicional).
+</p>
 
 ---
 
-## Avisos importantes
+## ⚡ Como usar (recomendado)
 
-- **Remove as correcoes de vulnerabilidades de CPU (Spectre/Meltdown)** -- use por sua conta e risco. Nao recomendado para servidores ou maquinas corporativas.
-- A **hibernacao sera desativada** -- voce nao podera usar o modo hibernar, mas o arquivo `hiberfil.sys` (que ocupa GBs) sera removido.
-- Algumas alteracoes exigem **reinicializacao** para ter efeito completo.
-- Recomenda-se **criar um ponto de restauracao** antes de executar.
+### 🖱️ Opção 1 — EXE (a mais fácil)
 
----
+1. Baixe o arquivo **`otimizador.exe`**
+2. Clique com o botão direito → **Executar como administrador**
+3. O UAC abre automaticamente. Confirme e pronto.
 
-## Como usar
+> Não precisa abrir terminal, digitar comandos nem liberar política de execução.
 
-1. Abra o **PowerShell como Administrador** (clique direito > Executar como administrador)
+### 🖥️ Opção 2 — PowerShell (avançado)
 
-2. Libere a execucao de scripts:
-```powershell
-Set-ExecutionPolicy Unrestricted -Scope Process -Force
-```
+1. Abra o **PowerShell como Administrador**
+2. Libere a execução de scripts:
+   ```powershell
+   Set-ExecutionPolicy Unrestricted -Scope Process -Force
+   ```
+3. Execute:
+   ```powershell
+   .\otimizador.ps1
+   ```
+4. Ao final, responda `S` para reiniciar o PC ou `N` para depois.
 
-3. Navegue ate a pasta do script e execute:
-```powershell
-.\otimizador.ps1
-```
-
-4. Ao final, o script perguntara se deseja **reiniciar o PC**. Responda `S` para sim ou `N` para reiniciar depois.
-
-### Execucao rapida (uma linha)
-
-```powershell
-Set-ExecutionPolicy Unrestricted -Scope Process -Force; .\otimizador.ps1
-```
-
-### Usando o EXE (mais simples)
-
-Basta baixar o arquivo `otimizador.exe`, clicar com o botao direito e escolher **Executar como administrador**. O UAC aparecera automaticamente.
-
-Para gerar o EXE voce mesmo:
+#### 🛠️ Gerar o EXE você mesmo
 
 ```powershell
 .\build-exe.ps1
 ```
 
-> Requer o modulo `ps2exe` (o script de build instala automaticamente se necessario).
+> O script instala o módulo `ps2exe` automaticamente se necessário.
 
 ---
 
-## Reverter alteracoes
+## 📋 O que o script faz — 17 otimizações
 
-Para reverter as principais mudancas manualmente:
+| # | Ícone | Otimização | Descrição |
+|---|:---:|-----------|------------|
+| 1 | 🧠 | Mitigações de CPU | Desativa Spectre/Meltdown — ganho real de desempenho |
+| 2 | 💾 | Compressão de Memória | Remove latência da compressão em RAM |
+| 3 | 🔒 | Telemetria | Bloqueia coleta de dados e DiagTrack |
+| 4 | 🔍 | Busca do Bing | Remove Bing da pesquisa do menu Iniciar |
+| 5 | 🎮 | Game Overlay | Desativa captura de tela e avisos (Win+G) |
+| 6 | 🎙️ | Cortana | Desativa assistente virtual |
+| 7 | 🎮 | Serviços Xbox | Para XblAuth, GameSave, NetApi e GipSvc |
+| 8 | 🚫 | Dicas e Sugestões | Remove anúncios e recomendações do sistema |
+| 9 | 💤 | Hibernação | Remove `hiberfil.sys` — libera GBs de disco |
+| 10 | 📡 | P2P de Updates | Desativa Otimização de Entrega (economiza banda) |
+| 11 | 🌐 | Rede | Ajustes TCP: autotuning + RSS |
+| 12 | 📱 | Apps em segundo plano | Impede execução desnecessária em background |
+| 13 | ⚡ | Plano de energia | Ativa Alto Desempenho |
+| 14 | 📰 | Widgets | Desativa Widgets (Windows 11) |
+| 15 | 🧹 | Arquivos temporários | Remove lixo do TEMP e `C:\Windows\Temp` |
+| 16 | 🖱️ | Menu de contexto Win11 | Restaura o menu clássico (estilo Windows 10) |
+| 17 | 📁 | Acesso Rápido | Remove do Explorer e abre em "Este Computador" |
 
-| Otimizacao | Como reverter |
+---
+
+## ⚠️ Avisos importantes
+
+- 🔓 **Remove correções de vulnerabilidades de CPU (Spectre/Meltdown)** — use por sua conta e risco. Não recomendado para servidores ou máquinas corporativas.
+- 💤 A **hibernação será desativada** — o modo hibernar some, mas o arquivo `hiberfil.sys` (que ocupa GBs) é removido.
+- 🔄 Algumas alterações exigem **reinicialização** para ter efeito completo.
+- 💾 Recomenda-se **criar um ponto de restauração** antes de executar.
+
+---
+
+## ↩️ Reverter alterações
+
+| Otimização | Como reverter |
 |------------|---------------|
-| Mitigacoes CPU | `FeatureSettingsOverride` = 0 (HKLM) |
+| Mitigações CPU | `FeatureSettingsOverride` = 0 (HKLM) |
 | Telemetria | `AllowTelemetry` = 1, reativar DiagTrack |
-| Hibernacao | `powercfg -h on` |
-| Plano de energia | Painel de Controle > Opcoes de Energia > Equilibrado |
+| Hibernação | `powercfg -h on` |
+| Plano de energia | Painel de Controle > Opções de Energia > Equilibrado |
 | Cortana | `AllowCortana` = 1 (HKLM) |
-| Servicos Xbox | `Set-Service -StartupType Manual` |
+| Serviços Xbox | `Set-Service -StartupType Manual` |
 | Menu de contexto Win11 | Deletar `HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}` |
-| Acesso Rapido | `HubMode` = 0, `LaunchTo` = 0 no Explorer\Advanced |
+| Acesso Rápido | `HubMode` = 0, `LaunchTo` = 0 no Explorer\Advanced |
 
 ---
 
-## Requisitos
+## 📦 Requisitos
 
-- Windows 10 ou Windows 11 (64-bit)
-- PowerShell 5.1+
-- Executar como **Administrador**
+- ✅ Windows 10 ou Windows 11 (64-bit)
+- ✅ PowerShell 5.1+
+- ✅ Executar como **Administrador**
 
 ---
 
-## Licenca
+## 📄 Licença
 
-MIT -- veja o arquivo [LICENSE](LICENSE).
+MIT — veja o arquivo [LICENSE](LICENSE).
