@@ -25,6 +25,8 @@ Compativel com **Windows 10** e **Windows 11** (21H2+).
 | 13 | Plano de energia | Ativa Alto Desempenho |
 | 14 | Widgets | Desativa Widgets (Windows 11) |
 | 15 | Arquivos temporarios | Remove lixo do TEMP e Windows/Temp |
+| 16 | Menu de contexto Win11 | Restaura o menu de contexto classico (desativa o moderno) |
+| 17 | Acesso Rapido | Remove Acesso Rapido do Explorer e abre em "Este Computador" |
 
 ---
 
@@ -73,6 +75,8 @@ Para reverter as principais mudancas manualmente:
 | Plano de energia | Painel de Controle > Opcoes de Energia > Equilibrado |
 | Cortana | `AllowCortana` = 1 (HKLM) |
 | Servicos Xbox | `Set-Service -StartupType Manual` |
+| Menu de contexto Win11 | Deletar `HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}` |
+| Acesso Rapido | `HubMode` = 0, `LaunchTo` = 0 no Explorer\Advanced |
 
 ---
 

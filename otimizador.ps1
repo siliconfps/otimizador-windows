@@ -231,6 +231,44 @@ if ($tempErros -gt 0) {
     Write-Host "    Arquivos temporarios removidos." -ForegroundColor Green
 }
 
+# 16. DESATIVAR MENU DE CONTEXTO NOVO DO WINDOWS 11 (Restaurar classico)
+Write-Host "[>] Desativando menu de contexto moderno (restaurando classico)..." -ForegroundColor Yellow
+$ctxMenuPath = "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}"
+if (!(Test-Path $ctxMenuPath)) { New-Item -Path $ctxMenuPath -Force | Out-Null }
+$inprocPath = "$ctxMenuPath\InprocServer32"
+if (!(Test-Path $inprocPath)) { New-Item -Path $inprocPath -Force | Out-Null }
+try {
+    Set-ItemProperty -Path $inprocPath -Name "(default)" -Value "" -Type String -ErrorAction Stop
+    Write-Host "    Menu de contexto classico restaurado." -ForegroundColor Green
+} catch {
+    Write-Warning "    Erro ao restaurar menu classico: $($_.Exception.Message)"
+}
+
+# 17. REMOVER ACESSO RAPIDO DO WINDOWS EXPLORER
+Write-Host "[>] Removendo Acesso Rapido do Explorer..." -ForegroundColor Yellow
+$explorerAdv = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+if (!(Test-Path $explorerAdv)) { New-Item -Path $explorerAdv -Force | Out-Null }
+$explorerBase = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer"
+$quickAccessOk = $true
+try {
+    Set-ItemProperty -Path $explorerAdv -Name "HubMode" -Value 1 -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $explorerAdv -Name "LaunchTo" -Value 1 -Type DWord -ErrorAction Stop
+} catch {
+    Write-Warning "    Erro ao configurar Explorer Advanced: $($_.Exception.Message)"
+    $quickAccessOk = $false
+}
+# Desativa arquivos recentes e pastas frequentes
+try {
+    Set-ItemProperty -Path $explorerBase -Name "ShowRecent" -Value 0 -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $explorerBase -Name "ShowFrequent" -Value 0 -Type DWord -ErrorAction Stop
+} catch {
+    Write-Warning "    Erro ao desativar recentes/frequentes: $($_.Exception.Message)"
+    $quickAccessOk = $false
+}
+if ($quickAccessOk) {
+    Write-Host "    Acesso Rapido removido e Explorer abre em 'Este Computador'." -ForegroundColor Green
+}
+
 # REINICIAR EXPLORER PARA APLICAR MUDANCAS VISUAIS
 Write-Host "---"
 Write-Host "[!] O Windows Explorer sera reiniciado para aplicar algumas mudancas." -ForegroundColor Magenta

@@ -1,5 +1,11 @@
 # Changelog — otimizador.ps1
 
+## [3.0] — 2026-06-19
+
+### Adicionado
+- **Nova otimização #16 — Menu de contexto clássico:** Desativa o menu de contexto moderno do Windows 11 via CLSID `{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}`, restaurando o menu clássico (shift+F10 / "Mostrar mais opções").
+- **Nova otimização #17 — Remover Acesso Rápido:** Remove o Acesso Rápido da navegação do Explorer, define "Este Computador" como padrão ao abrir, e desativa arquivos recentes e pastas frequentes.
+
 ## [2.0] — 2026-05-22
 
 ### Corrigido
