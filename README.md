@@ -61,6 +61,18 @@ Set-ExecutionPolicy Unrestricted -Scope Process -Force
 Set-ExecutionPolicy Unrestricted -Scope Process -Force; .\otimizador.ps1
 ```
 
+### Usando o EXE (mais simples)
+
+Basta baixar o arquivo `otimizador.exe`, clicar com o botao direito e escolher **Executar como administrador**. O UAC aparecera automaticamente.
+
+Para gerar o EXE voce mesmo:
+
+```powershell
+.\build-exe.ps1
+```
+
+> Requer o modulo `ps2exe` (o script de build instala automaticamente se necessario).
+
 ---
 
 ## Reverter alteracoes
