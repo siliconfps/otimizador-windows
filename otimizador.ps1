@@ -269,6 +269,21 @@ if ($quickAccessOk) {
     Write-Host "    Acesso Rapido removido e Explorer abre em 'Este Computador'." -ForegroundColor Green
 }
 
+# 18. DESATIVAR CrossDeviceResume (Windows 11 - cross-device/resume)
+Write-Host "[>] Desativando CrossDeviceResume..." -ForegroundColor Yellow
+$taskName = "\Microsoft\Windows\Shell\Kill CrossDeviceResume.exe"
+$taskExists = schtasks /query /tn $taskName 2>&1 | Out-Null
+try {
+    $result = schtasks /create /sc OnLogon /delay 0000:03 /tn $taskName /tr "taskkill /im CrossDeviceResume.exe /f" /ru SYSTEM /f 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "    CrossDeviceResume desativado (tarefa agendada criada)." -ForegroundColor Green
+    } else {
+        Write-Warning "    Erro ao criar tarefa agendada: $result"
+    }
+} catch {
+    Write-Warning "    Erro ao desativar CrossDeviceResume: $($_.Exception.Message)"
+}
+
 # REINICIAR EXPLORER PARA APLICAR MUDANCAS VISUAIS
 Write-Host "---"
 Write-Host "[!] O Windows Explorer sera reiniciado para aplicar algumas mudancas." -ForegroundColor Magenta

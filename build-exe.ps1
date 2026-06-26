@@ -41,7 +41,7 @@ Invoke-ps2exe -InputFile $inputFile `
               -noError `
               -title "Otimizador Windows" `
               -description "Script de otimizacao pos-instalacao Windows 10/11" `
-              -version "3.0.0.0" `
+              -version "3.1.0.0" `
               -product "Otimizador Windows" `
               -company ""
 

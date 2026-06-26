@@ -47,7 +47,7 @@
 
 ---
 
-## 📋 O que o script faz — 17 otimizações
+## 📋 O que o script faz — 18 otimizações
 
 | # | Ícone | Otimização | Descrição |
 |---|:---:|-----------|------------|
@@ -68,6 +68,7 @@
 | 15 | 🧹 | Arquivos temporários | Remove lixo do TEMP e `C:\Windows\Temp` |
 | 16 | 🖱️ | Menu de contexto Win11 | Restaura o menu clássico (estilo Windows 10) |
 | 17 | 📁 | Acesso Rápido | Remove do Explorer e abre em "Este Computador" |
+| 18 | 🔄 | CrossDeviceResume | Mata CrossDeviceResume.exe via tarefa agendada (Recal/Cross-device) |
 
 ---
 
@@ -92,6 +93,7 @@
 | Serviços Xbox | `Set-Service -StartupType Manual` |
 | Menu de contexto Win11 | Deletar `HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}` |
 | Acesso Rápido | `HubMode` = 0, `LaunchTo` = 0 no Explorer\Advanced |
+| CrossDeviceResume | Deletar tarefa: `schtasks /delete /tn "\Microsoft\Windows\Shell\Kill CrossDeviceResume.exe" /f` |
 
 ---
 

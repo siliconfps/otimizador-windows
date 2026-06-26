@@ -1,5 +1,10 @@
 # Changelog — otimizador.ps1
 
+## [3.1] — 2026-06-26
+
+### Adicionado
+- **Nova otimização #18 — CrossDeviceResume:** Cria tarefa agendada (`schtasks`) que mata `CrossDeviceResume.exe` a cada logon (Windows 11 — cross-device/Recall).
+
 ## [3.0] — 2026-06-19
 
 ### Adicionado
