@@ -1,5 +1,10 @@
 # Changelog — otimizador.ps1
 
+## [3.2] — 2026-06-27
+
+### Adicionado
+- **Nova otimização #19 — Remover Home e Galeria:** Desafixa os CLSIDs `{f874310e-b6b7-47dc-bc84-b9e6b38f5903}` (Home) e `{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}` (Galeria) do painel de navegação do Explorer no Windows 11 24H2. (Integração do script `rqa.ps1`)
+
 ## [3.1] — 2026-06-26
 
 ### Adicionado

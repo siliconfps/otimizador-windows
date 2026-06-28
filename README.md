@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/versão-3.0-blue?style=for-the-badge" alt="Versão 3.0">
+  <img src="https://img.shields.io/badge/versão-3.2-blue?style=for-the-badge" alt="Versão 3.2">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows 10 | 11">
   <img src="https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell 5.1+">
   <img src="https://img.shields.io/badge/licença-MIT-green?style=for-the-badge" alt="MIT License">
@@ -47,7 +47,7 @@
 
 ---
 
-## 📋 O que o script faz — 18 otimizações
+## 📋 O que o script faz — 19 otimizações
 
 | # | Ícone | Otimização | Descrição |
 |---|:---:|-----------|------------|
@@ -69,6 +69,7 @@
 | 16 | 🖱️ | Menu de contexto Win11 | Restaura o menu clássico (estilo Windows 10) |
 | 17 | 📁 | Acesso Rápido | Remove do Explorer e abre em "Este Computador" |
 | 18 | 🔄 | CrossDeviceResume | Mata CrossDeviceResume.exe via tarefa agendada (Recal/Cross-device) |
+| 19 | 🏠 | Home e Galeria | Remove "Home" e "Galeria" do painel de navegação do Explorer (Windows 11 24H2) |
 
 ---
 
@@ -94,6 +95,7 @@
 | Menu de contexto Win11 | Deletar `HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}` |
 | Acesso Rápido | `HubMode` = 0, `LaunchTo` = 0 no Explorer\Advanced |
 | CrossDeviceResume | Deletar tarefa: `schtasks /delete /tn "\Microsoft\Windows\Shell\Kill CrossDeviceResume.exe" /f` |
+| Home e Galeria | `System.IsPinnedToNameSpaceTree` = 1 nos CLSIDs `{f874310e-...}` e `{e88865ea-...}` (HKCU) |
 
 ---
 

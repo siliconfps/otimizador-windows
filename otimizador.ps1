@@ -284,6 +284,34 @@ try {
     Write-Warning "    Erro ao desativar CrossDeviceResume: $($_.Exception.Message)"
 }
 
+# 19. REMOVER HOME E GALERIA DO EXPLORER (Windows 11 24H2)
+Write-Host "[>] Removendo 'Home' e 'Galeria' do Explorer..." -ForegroundColor Yellow
+$homeClsidPath = "HKCU:\Software\Classes\CLSID\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}"
+$galleryClsidPath = "HKCU:\Software\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}"
+$homeGalleryOk = $true
+
+# Desafixar Home
+if (!(Test-Path $homeClsidPath)) { New-Item -Path $homeClsidPath -Force | Out-Null }
+try {
+    Set-ItemProperty -Path $homeClsidPath -Name "System.IsPinnedToNameSpaceTree" -Value 0 -Type DWord -ErrorAction Stop
+} catch {
+    Write-Warning "    Erro ao remover Home: $($_.Exception.Message)"
+    $homeGalleryOk = $false
+}
+
+# Desafixar Galeria
+if (!(Test-Path $galleryClsidPath)) { New-Item -Path $galleryClsidPath -Force | Out-Null }
+try {
+    Set-ItemProperty -Path $galleryClsidPath -Name "System.IsPinnedToNameSpaceTree" -Value 0 -Type DWord -ErrorAction Stop
+} catch {
+    Write-Warning "    Erro ao remover Galeria: $($_.Exception.Message)"
+    $homeGalleryOk = $false
+}
+
+if ($homeGalleryOk) {
+    Write-Host "    'Home' e 'Galeria' removidos do Explorer." -ForegroundColor Green
+}
+
 # REINICIAR EXPLORER PARA APLICAR MUDANCAS VISUAIS
 Write-Host "---"
 Write-Host "[!] O Windows Explorer sera reiniciado para aplicar algumas mudancas." -ForegroundColor Magenta
