@@ -61,15 +61,28 @@ try {
 } catch {
     Write-Warning "    Erro ao configurar telemetria: $($_.Exception.Message)"
 }
-Stop-Service -Name DiagTrack -ErrorAction SilentlyContinue | Out-Null
+Stop-Service -Name DiagTrack -Force -ErrorAction SilentlyContinue | Out-Null
 Set-Service -Name DiagTrack -StartupType Disabled -ErrorAction SilentlyContinue
+Stop-Service -Name dmwappushservice -Force -ErrorAction SilentlyContinue | Out-Null
+Set-Service -Name dmwappushservice -StartupType Disabled -ErrorAction SilentlyContinue
+Write-Host "    Telemetria e servicos de rastreio desativados." -ForegroundColor Green
 
 # 4. DESATIVAR BING NA PESQUISA DO MENU INICIAR
 Write-Host "[>] Removendo Bing da pesquisa local..." -ForegroundColor Yellow
 $searchPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"
+$explorerPolicyPath = "HKCU:\Software\Policies\Microsoft\Windows\Explorer"
+$searchPolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+
 if (!(Test-Path $searchPath)) { New-Item -Path $searchPath -Force | Out-Null }
+if (!(Test-Path $explorerPolicyPath)) { New-Item -Path $explorerPolicyPath -Force | Out-Null }
+if (!(Test-Path $searchPolicyPath)) { New-Item -Path $searchPolicyPath -Force | Out-Null }
+
 try {
-    Set-ItemProperty -Path $searchPath -Name "BingSearchEnabled" -Value 0 -Type DWord
+    Set-ItemProperty -Path $searchPath -Name "BingSearchEnabled" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $searchPath -Name "CortanaConsent" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $explorerPolicyPath -Name "DisableSearchBoxSuggestions" -Value 1 -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $searchPolicyPath -Name "DisableCloudSearch" -Value 1 -Type DWord -ErrorAction SilentlyContinue
+    Write-Host "    Bing removido da pesquisa local." -ForegroundColor Green
 } catch {
     Write-Warning "    Erro ao desativar Bing: $($_.Exception.Message)"
 }
@@ -77,18 +90,21 @@ try {
 # 5. DESATIVAR AVISO MS-GAMINGOVERLAY (WIN+G)
 Write-Host "[>] Desativando avisos de Game Overlay..." -ForegroundColor Yellow
 $gameDvr = "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR"
-if (!(Test-Path $gameDvr)) { New-Item -Path $gameDvr -Force | Out-Null }
-try {
-    Set-ItemProperty -Path $gameDvr -Name "AppCaptureEnabled" -Value 0 -Type DWord
-} catch {
-    Write-Warning "    Erro no GameDVR (HKCU): $($_.Exception.Message)"
-}
+$gameConfig = "HKCU:\System\GameConfigStore"
 $gamePolicy = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR"
+
+if (!(Test-Path $gameDvr)) { New-Item -Path $gameDvr -Force | Out-Null }
+if (!(Test-Path $gameConfig)) { New-Item -Path $gameConfig -Force | Out-Null }
 if (!(Test-Path $gamePolicy)) { New-Item -Path $gamePolicy -Force | Out-Null }
+
 try {
-    Set-ItemProperty -Path $gamePolicy -Name "AllowGameDVR" -Value 0 -Type DWord
+    Set-ItemProperty -Path $gameDvr -Name "AppCaptureEnabled" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $gameConfig -Name "GameDVR_Enabled" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $gameConfig -Name "GameDVR_FSEBehaviorMode" -Value 2 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $gamePolicy -Name "AllowGameDVR" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Write-Host "    Avisos de Game Overlay desativados." -ForegroundColor Green
 } catch {
-    Write-Warning "    Erro no GameDVR (HKLM): $($_.Exception.Message)"
+    Write-Warning "    Erro no GameDVR: $($_.Exception.Message)"
 }
 
 # 6. DESATIVAR CORTANA
@@ -117,9 +133,11 @@ $tipsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryMana
 if (!(Test-Path $tipsPath)) { New-Item -Path $tipsPath -Force | Out-Null }
 try {
     Set-ItemProperty -Path $tipsPath -Name "SoftLandingEnabled" -Value 0 -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $tipsPath -Name "SubscribedContent-338388Enabled" -Value 0 -Type DWord -ErrorAction SilentlyContinue
     Set-ItemProperty -Path $tipsPath -Name "SubscribedContent-338393Enabled" -Value 0 -Type DWord -ErrorAction Stop
     Set-ItemProperty -Path $tipsPath -Name "SubscribedContent-353694Enabled" -Value 0 -Type DWord -ErrorAction Stop
     Set-ItemProperty -Path $tipsPath -Name "SubscribedContent-353696Enabled" -Value 0 -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $tipsPath -Name "SystemPaneSuggestionsEnabled" -Value 0 -Type DWord -ErrorAction SilentlyContinue
     Write-Host "    Dicas e sugestoes desativadas." -ForegroundColor Green
 } catch {
     Write-Warning "    Erro ao desativar dicas: $($_.Exception.Message)"
@@ -149,13 +167,15 @@ try {
 Write-Host "[>] Aplicando ajustes de rede..." -ForegroundColor Yellow
 $netOk = $true
 $netshCommands = @(
-    @("int tcp set global autotuninglevel=normal", "TCP Autotuning"),
-    @("int tcp set global rss=enabled", "RSS (Receive Side Scaling)")
+    @("int", "tcp", "set", "global", "autotuninglevel=normal", "TCP Autotuning"),
+    @("int", "tcp", "set", "global", "rss=enabled", "RSS (Receive Side Scaling)")
 )
 foreach ($cmd in $netshCommands) {
-    $result = netsh $($cmd[0]) 2>&1
+    $netshArgs = $cmd[0..4]
+    $label = $cmd[5]
+    $result = netsh $netshArgs 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning "    Falha ao configurar $($cmd[1]): $result"
+        Write-Warning "    Falha ao configurar ${label}: $result"
         $netOk = $false
     }
 }
@@ -185,13 +205,20 @@ $result = powercfg -setactive $guidAltoDesempenho 2>&1
 if ($LASTEXITCODE -eq 0) {
     $planoAtivado = $true
 } else {
-    # Busca dinamicamente por "Alto desempenho" ou "High performance"
-    $planos = powercfg -list 2>&1
-    $linha = $planos | Where-Object { $_ -match "Alto desempenho|High performance|Ultimate Performance" } | Select-Object -First 1
-    if ($linha -and $linha -match '([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})') {
-        $guid = $Matches[1]
-        powercfg -setactive $guid 2>&1 | Out-Null
-        $planoAtivado = ($LASTEXITCODE -eq 0)
+    # Tenta duplicar o esquema padrao (caso esteja oculto em notebooks)
+    powercfg -duplicatescheme $guidAltoDesempenho 2>&1 | Out-Null
+    $result = powercfg -setactive $guidAltoDesempenho 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        $planoAtivado = $true
+    } else {
+        # Busca dinamicamente por "Alto desempenho", "High performance" ou "Ultimate Performance"
+        $planos = powercfg -list 2>&1
+        $linha = $planos | Where-Object { $_ -match "Alto desempenho|High performance|Ultimate Performance" } | Select-Object -First 1
+        if ($linha -and $linha -match '([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})') {
+            $guid = $Matches[1]
+            powercfg -setactive $guid 2>&1 | Out-Null
+            $planoAtivado = ($LASTEXITCODE -eq 0)
+        }
     }
 }
 
@@ -216,12 +243,16 @@ try {
 Write-Host "[>] Limpando arquivos temporarios..." -ForegroundColor Yellow
 $tempErros = 0
 @($env:TEMP, "C:\Windows\Temp") | ForEach-Object {
-    Get-ChildItem -Path $_ -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
-        try {
-            Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction Stop
-        } catch {
-            # Arquivos em uso serao ignorados silenciosamente
-            $tempErros++
+    if (Test-Path -LiteralPath $_) {
+        Get-ChildItem -Path $_ -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+            if (Test-Path -LiteralPath $_.FullName) {
+                try {
+                    Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction Stop
+                } catch {
+                    # Arquivos em uso serao ignorados silenciosamente
+                    $tempErros++
+                }
+            }
         }
     }
 }
@@ -272,7 +303,6 @@ if ($quickAccessOk) {
 # 18. DESATIVAR CrossDeviceResume (Windows 11 - cross-device/resume)
 Write-Host "[>] Desativando CrossDeviceResume..." -ForegroundColor Yellow
 $taskName = "\Microsoft\Windows\Shell\Kill CrossDeviceResume.exe"
-$taskExists = schtasks /query /tn $taskName 2>&1 | Out-Null
 try {
     $result = schtasks /create /sc OnLogon /delay 0000:03 /tn $taskName /tr "taskkill /im CrossDeviceResume.exe /f" /ru SYSTEM /f 2>&1
     if ($LASTEXITCODE -eq 0) {

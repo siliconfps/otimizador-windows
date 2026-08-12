@@ -1,5 +1,21 @@
 # Changelog — otimizador.ps1
 
+## [3.3] — 2026-08-12
+
+### Corrigido
+- **Ajustes de Rede (#11):** Corrigida a invocação do `netsh`. O comando anterior passava a string inteira como um único argumento entre aspas para o executável, causando falhas recorrentes com a mensagem "comando não encontrado".
+- **Compilação EXE (`build-exe.ps1`):** Removido o argumento `-noConsole` do `ps2exe`. A ausência de console ao executar o `.exe` impedia o usuário de acompanhar o progresso e fazia os prompts do `Read-Host` travarem ou falharem sem interface.
+- **Limpeza de arquivos temporários (#15):** Corrigido o contador de erros. Diretórios removidos não geram mais falsos positivos nos itens contidos, e adicionado o parâmetro `-LiteralPath` para prevenir erros com nomes de arquivos contendo colchetes `[...]`.
+- **Game Overlay (#5):** Adicionadas as configurações `GameDVR_Enabled` e `GameDVR_FSEBehaviorMode` em `HKCU:\System\GameConfigStore` para suprimir popups do `ms-gamingoverlay` no Windows 10/11.
+- **Busca do Bing (#4):** Adicionadas as chaves de política `DisableSearchBoxSuggestions` e `DisableCloudSearch` para efetivamente desativar a busca do Bing no Menu Iniciar do Windows 10 (2004+) e Windows 11.
+- **Plano de Energia (#13):** Adicionado fallback com `powercfg -duplicatescheme` caso o esquema de Alto Desempenho esteja oculto ou ausente no sistema (comum em notebooks/Modern Standby).
+
+### Alterado
+- **Feedback no Terminal (#3, #4, #5):** Adicionadas mensagens de confirmação visual em verde (`[>] ... desativado.`) nas otimizações de Telemetria, Bing e Game Overlay, padronizando com os demais 16 itens.
+- **Telemetria (#3):** Incluída a parada e desativação do serviço `dmwappushservice` além do `DiagTrack`.
+- **Dicas e Sugestões (#8):** Incluídas as chaves `SystemPaneSuggestionsEnabled` e `SubscribedContent-338388Enabled` para cobrir recomendações no menu Iniciar do Windows 11.
+- **CrossDeviceResume (#18):** Removida instrução redundante e variável não utilizada `$taskExists`.
+
 ## [3.2] — 2026-06-27
 
 ### Adicionado

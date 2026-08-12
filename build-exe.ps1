@@ -27,7 +27,6 @@ Write-Host "[>] Gerando $outputFile ..." -ForegroundColor Cyan
 
 # Parametros:
 #   -requireAdmin: embute manifest pedindo elevacao (UAC)
-#   -noConsole: executa o script sem janela preta do PowerShell visivel
 #   -noOutput: nao gera o .log de saida
 #   -noError: nao gera o .err de erro
 #   -title: nome que aparece no UAC / Task Manager
@@ -36,12 +35,11 @@ Write-Host "[>] Gerando $outputFile ..." -ForegroundColor Cyan
 Invoke-ps2exe -InputFile $inputFile `
               -OutputFile $outputFile `
               -requireAdmin `
-              -noConsole `
               -noOutput `
               -noError `
               -title "Otimizador Windows" `
               -description "Script de otimizacao pos-instalacao Windows 10/11" `
-              -version "3.2.0.0" `
+              -version "3.3.0.0" `
               -product "Otimizador Windows" `
               -company ""
 
